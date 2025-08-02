@@ -1,43 +1,53 @@
-import { useEffect, useState } from 'react';
-import TaskForm from './components/TaskForm';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './contexts/AuthContext';
+import Header from './components/Header';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Products from './pages/Products';
+import Cart from './pages/Cart';
 import './App.css';
 
+// Create a client
+const queryClient = new QueryClient();
+
 function App() {
-  const [tasks, setTasks] = useState([]);
-
-  const getAllTasks = async () => {
-    await fetch('http://localhost:8080/api/tasks/getAllTasks')
-      .then((response) => response.json())
-      .then((task) => {
-        setTasks(task);
-      });
-  };
-  console.log(tasks);
-
-  const deleteTask = async (id) => {
-    await fetch(`http://localhost:8080/api/tasks/deleteTask/${id}`, {
-      method: 'DELETE',
-    });
-    setTasks(tasks.filter((task) => task._id !== id));
-  };
-
-  useEffect(() => {
-    getAllTasks();
-  }, []);
-
   return (
-    <div className="app-container">
-      <TaskForm/>
-      <h1>Tasks</h1>
-      <div className="tasks-list">
-        {tasks.map((task) => (
-          <div className="task-item" key={task._id}>
-            {task.title}
-            <button className="delete-btn" onClick={() => deleteTask(task._id)}>Delete</button>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router>
+          <div className="App">
+            <Header />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/cart" element={<Cart />} />
+            </Routes>
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#363636',
+                  color: '#fff',
+                },
+                success: {
+                  duration: 3000,
+                  theme: {
+                    primary: '#4aed88',
+                  },
+                },
+              }}
+            />
           </div>
-        ))}
-      </div>
-    </div>
+        </Router>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
